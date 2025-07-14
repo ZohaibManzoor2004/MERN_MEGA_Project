@@ -1,0 +1,94 @@
+body{
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height:100vh;
+    /* background-image: url("https://images.unsplash.com/photo-1560347876-aeef00ee58a1"); */
+    background-color: #fff7f7; /* soft pastel pink */
+
+}
+.container{
+    flex:1;
+ } 
+/* NavBar */
+ .navbar{
+    height:5rem;
+    background-color: white;
+ }
+ /* footer */
+ .fa-hotel{
+    color:#fe424d;
+    font-size: 2rem;
+ }
+ .nav-link{
+    color: solid #22222222 !important;
+ }
+ .f-info-links a{
+    text-decoration:none;
+    color: #222222;
+ }
+.f-info-links a:hover{
+    text-decoration:underline;
+}
+.f-info-links{
+    width:100%;
+}
+.f-info-socials{
+    width:100%;
+    font-size:1.2rem;
+}
+.f-info{
+    padding:0px;
+    height:8rem;
+    background-color:#ebebeb;
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+}
+.f-info-socials i {
+    margin-right:1rem;
+}
+/*Cards or All Listings*/
+.card{
+    border: none !important;
+    
+}
+.card-img-top{
+    border-radius: 1rem !important;
+    width: 150rem;
+    height: 300px;
+}
+.card-body{
+    padding: 0 !important;
+}
+.card-text{
+    font-weight:400;
+}
+.listing-link{
+    text-decoration: none;
+}
+.card-img-overlay{
+    opacity:0;
+}
+.card-img-overlay:hover{
+    opacity:0.4;
+    background-color: white;
+}
+/* New Listing Page */
+
+.add-btn{
+    background-color: #fe424d !important;
+    border:none !important;
+}
+/* Show page */
+.show-img{
+    height: 30vh;
+}
+.show-card{
+    padding-left: 0;
+    padding-right: 0;
+}
+/* */

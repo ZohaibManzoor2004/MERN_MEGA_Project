@@ -1,0 +1,30 @@
+
+<% layout("./layouts/boilerplate.ejs") %>
+<body>
+    <br>
+    <br>
+<h1>All Listings</h1>
+    <br>
+<div class="row row-cols-xl-4 row-cols-lg-4 row-cols-md-2 row-cols-sm-1 " >
+    <% allListings.forEach(listing => { %>
+    <a  href="/listings/<%= listing._id %>" class="listing-link" style="padding-bottom: 2em;">
+    <div class="card col">
+        <img src="<%= listing.image.url %>" 
+            class="card-img-top"
+            alt="Listing_iamge"
+        />
+        <div class="card-img-overlay">...</div>
+        <div class="card-body">
+                <!-- <h5 class="card-title"><%= listing.title %></h5> -->
+          <p class="card-text">
+           <b> <%= listing.title %> </b><br /> 
+            <%= listing.price %> PKR / Night 
+          </p>
+        </div>
+    </div>
+    </a>
+    
+    <% }) %>
+</div>
+</body>
+
