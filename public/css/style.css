@@ -3,9 +3,8 @@ body{
     display: flex;
     flex-direction: column;
     min-height:100vh;
-    background-image: url("../../sources/WebSysLogo.jpg");
-}
-.container{
+    /* This really works well below for bg */
+    background-image: url("../../sources/img.jpg");
     flex:1;
  } 
 /* NavBar */

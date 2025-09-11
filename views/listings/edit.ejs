@@ -2,7 +2,7 @@
 <div class="row mt-3">
     <div class="col-8 offset-2">
         <h3>Edit Your Listing</h3>
-            <form method="POST" action="/listing/<%= listing._id %> /edit?_method=PUT" novalidate class="needs-validation">
+            <form method="POST" action="/listings/<%= listing._id %> /edit?_method=PUT" novalidate class="needs-validation">
                 <div class="mb-3"> 
                     <label for="title" class="form-label">Title</label>
                     <input name= "listing[title]"
@@ -71,10 +71,9 @@
                         Looks correct Location!
                     </div>
                 </div>
-                <button class="btn btn-dark add-btn">Add Listing</button>
+                <button class="btn btn-dark add-btn">Edit Listing</button>
             </form>
         </div>
     </div>
 </div>
-<script src="/public/js/script.js"></script>
 

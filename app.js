@@ -1,14 +1,18 @@
 const express = require("express");
 const app = express();
+const session = require("express-session");
 const mongoose= require("mongoose");//db
 const Listing = require("./models/listing.js");
-const {listingSchema} = require("./Schema.js");
-const path = require("path");//
+const Review = require("./models/review.js");
+const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const {listingSchema, reviewSchema} = require("./Schema.js");
+const path = require("path");
 app.use(express.urlencoded({extended: true}));
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-//Acquiring database 
-const MONGO_URL="mongodb://mongo:KGbMEWGsGbxuziXtjqrRDnflXpJhBJGA@mongodb.railway.internal:27017";
+const User = require("./models/user.js");
 const methodOverride = require("method-override");
 app.use(methodOverride("_method"));
 const ejsMate=require("ejs-mate");
@@ -18,7 +22,16 @@ app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views",path.join(__dirname,"views"));
 app.use(express.static(path.join(__dirname,"/public")));
-app.use(express.static(path.join(__dirname, 'sources')));
+app.use(express.static(path.join(__dirname, '/sources')));
+ //for middleware req_path shortening parsing
+const listingsRouter = require("./routes/listing.js");
+const reviewsRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
+
+//Acquiring database 
+//const MONGO_URL="mongodb://mongo:KGbMEWGsGbxuziXtjqrRDnflXpJhBJGA@mongodb.railway.internal:27017";
+
+const MONGO_URL = "mongodb://localhost:27017/wanderlust";
 async function main(){
     await mongoose.connect(MONGO_URL);
 }
@@ -33,111 +46,71 @@ main()
 let port = 8080;
 app.listen( port , ()=>{
     console.log(" listening at port 8080 server");
-}); 
-const validateListing = (req, res, next ) => {
-    let {error } = listingSchema.validate(req.body);
-    if (error){
-        let errMsg= error.details.map((el) => el.message).join(",");
-        //throw ExpressError(404, result.error);
-        throw new ExpressError(404, errMsg);
-    }else{
-        next();
-    }
-}
+});  
+
+//Setting up the Session middleware /////////////////////////////////////////////////////SESSION///////////////////////////////
+//Session Options
+const sessionOptions = {
+    secret:"mysupersecretcode",
+    resave: false,
+    saveUninitialized: true,
+    cookie:{
+        //setting expiry for a week
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000, 
+        maxAge:  7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+    },
+};
 
 app.get("/", (req,res)=>{
-    res.send("Hello i am the root Route");
+    res.send("I am on the Home route");
 });
-//Index Route
-app.get("/listings" ,async (req,res)=>{
-    let allListings = await Listing.find({});
-    //console.log(allListings);
-    //res.render("listings/index.ejs", {allListings});
-    res.render("listings/index.ejs", {allListings});
-    //console.log(allListings[0].image.url);
+
+app.use(session(sessionOptions));
+app.use(flash());
+//Passport Action
+app.use(passport.initialize());
+//For user Info carrying through out the Session(Login in the case)
+//Important to remember about user from page to page
+app.use(passport.session());
+//serialize:to put the user login info into sesssion once started, deserialize:to remove user info once session ends
+passport.use(new LocalStrategy(User.authenticate()));
+passport.deserializeUser(User.deserializeUser());
+passport.serializeUser(User.serializeUser());
+////////////////////////////Session Setup Ends///////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////Flash Messages initialization (Must To do)////////////
+app.use((req,res, next ) =>{
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    res.locals.currUser = req.user; 
+    console.log("This is the logged User info",res.locals.currUser);
+    //user(when logged in auto assigned object)  is passed for availabiltiy to other/any template for a request
+    next();
 });
-//New Route
-app.get("/listings/new",(req,res)=>{
-    res.render("listings/new.ejs");
-})
-//Show Route
-app.get("/listings/:id" ,
-    wrapAsync(async (req,res)=>{
-    let {id}=req.params;
-    //console.log(id);
-    const listing = await Listing.findById(id);
-    res.render("listings/show.ejs",{listing});
-    })
-);
-//Post the New Listing 
-//OR Create Route
-//here we can remove wrapAsync
-app.post("/listings", validateListing,
-    wrapAsync(async (req,res,next)=>{
-    let newListing=req.body.listing;
-    //condition to check if the body is not null and deal the error
-    //console.log("Image URL: ", newListing.image.url);
-    if (newListing.image.url === ""){
-        let DefaultURL= "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhY2glMjBob3VzZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60";
-        newListing.image.url = DefaultURL;
-    }
-    let result = listingSchema.validate(req.body);
-    console.log(result);
-    
-    if (result.error){
-        throw new ExpressError(400, result.error); // optional: better error
-}
 
-    //console.log("NEW LISTING Object DATA: ", newListing.image.url);
-    newListing = new Listing(newListing);
-    await newListing.save();
-    //console.log("Listing was inserted: ");
-    res.redirect("/listings");  
-    }
-));
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// app.get("/demouser", async(req,res)=>{
+//     let fakeUser = new User({
+//         email: "student@gmail.com",
+//         username: "delta-student"
+//     });
+//     let registeredUser = await User.register(fakeUser, "helloworld");
+//     res.send(registeredUser);
+// });
 
-//Edit Route
-app.get("/listing/:id/edit",
-    wrapAsync(async(req,res)=>{
-    let {id} = req.params;
-    //Ok till here
-    const listing = await Listing.findById(id);
-    //console.log("Request reached at edit route with listing: ", listing);
-    res.render("listings/edit.ejs",{listing});
-    })
-);
 
-//Post/Put the Edited Route//Update Route
-
-app.put("/listing/:id/edit",validateListing, 
-    wrapAsync(async (req,res)=>{
-    let {id} = req.params;
-    id = id.trim();
-    //console.log(req.body.listing);
-    //let listing = await Listing.findById(id);
-    //console.log("Edited listing is : ", listing);
-    let listing=await Listing.findByIdAndUpdate(id , {...req.body.listing})
-    //let editedListing = req.body.listing;
-    //console.log(editedListing);
-    res.redirect("/listings");
-    })
-);
-
-//Delete Route
-app.delete("/listing/:id/delete",
-    wrapAsync(async(req,res)=>{
-    //console.log("reached at delete");
-    let {id} = req.params;
-    let DelListing = await Listing.findByIdAndDelete(id);
-    //console.log("The Listing was Deleted: ",DelListing);
-    res.redirect("/listings");
-    }
-));
+//as we are using route to map the listing prefix for the routes: this maps to listings/rel_route
+/////////////////////////////////////////////////////////////////////////////////Request prefix joining with (separated) file routes /////////////////////////////
+app.use("/listings", listingsRouter);
+app.use("/listings/:id/reviews", reviewsRouter);
+app.use("/", userRouter)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Page unmatched default response (page not found)
 app.all("*",(req,res,next)=>{
     next(new ExpressError(404, "Page not Found!"));
-})
+});
 
 app.use((err,req,res,next)=>{
     let {statusCode=500, message="Something went wrong" } = err;
@@ -145,16 +118,4 @@ app.use((err,req,res,next)=>{
     //res.status(500).send("Soemthing went wrong while Saving Data to Database");
     //res.status(statusCode).send(message);
 });
-// app.get("/testListing" ,async (req,res)=>{
-//     let sampleListing = new Listing({ 
-//         title: "My new Villa",
-//         description: "By the beach",
-//         price: 1200,
-//         location: "Galata Tower, Istanbul",
-//         country: "Turkey",
-//     });
-//     await sampleListing.save();
-//     console.log("Sample was Saved");
-//     res.send("Successful testing");
-// });
 

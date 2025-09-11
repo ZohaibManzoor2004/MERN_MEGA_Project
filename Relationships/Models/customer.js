@@ -7,8 +7,6 @@ main()
 async function main(){
     await mongoose.connect("mongodb://127.0.0.1:27017/relationDemo");
 }
-
-
 const orderSchema = new Schema({
     item: String,
     price: Number
@@ -22,6 +20,19 @@ const orderSchema = new Schema({
         },
     ],
  });
+// customerSchema.pre("findOneAndDelete", async ()=>{
+//     console.log("PRE MIDDLEWARE Called");
+// });
+customerSchema.post("findOneAndDelete", async (customer)=>{
+    console.log("POST MIDDLEWARE CALLED");
+    console.log("The customer data is: ",customer);
+    console.log("Orders' Length: ",customer.orders.length);
+    if (customer.orders.length){
+        let result = await Order.deleteMany({ _id: { $in: customer.orders}});
+        console.log("The result of Middleware", result);
+    }
+
+});
 
 const Order = mongoose.model("Order", orderSchema);
 const Customer = mongoose.model("customer", customerSchema);
@@ -62,7 +73,34 @@ const findCustomer= async()=>{
 }
 //findCustomer();
 
+//Mongoose (CRUD OPERATION) Middlewares that defines pre operation before query is run on any Schema(not model)
+const addCust = async ()=>{
+    let  newCust = new Customer({
+        name : "Zohaib Manzoor"
+    });
 
+    let newOrder = new Order({
+        item: "Biryani",
+        prize :800
+    });
+    newCust.orders.push(newOrder);
+    await newOrder.save();
+    await newCust.save();
 
+    console.log("Added new Customer");
+};
+//addCust();
+const delCust = async ()=>{
+    let data = await Customer.findByIdAndDelete("687ad858bbab28b6aad7b7ca");
+    console.log("deleted the customers' data ", data);
+};
+delCust();
+// addCust();
 
-
+/*
+  {
+    _id: ObjectId('687ad858bbab28b6aad7b7ca'),
+    name: 'Zohaib Manzoor',
+    orders: [ ObjectId('687ad858bbab28b6aad7b7cb') ],
+    __v: 0
+  }*/

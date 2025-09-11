@@ -1,7 +1,7 @@
 //Once it is made/initailized , we can call it  by its required fun assined variable name to perform db operations.
-
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const Review = require("./review.js");
 
 const listingSchema = new Schema({
     title:{
@@ -26,23 +26,29 @@ const listingSchema = new Schema({
             ?"https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhY2glMjBob3VzZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60"
             : url,
         }},
-    // image: {
-    //     filename: String,
-    //     type:Object,
-    //     url: String,
-    //     default:{ 
-    //         url : "https://unsplash.com/photos/white-and-red-wooden-house-miniature-on-brown-table-rgJ1J8SDEAY",
-    //     },
-    //   // set: (v) => v === "" ? "https://unsplash.com/photos/white-and-red-wooden-house-miniature-on-brown-table-rgJ1J8SDEAY" : v,
-    // },
-    // image: {
-    //     type:String,
-    //     default: "https://unsplash.com/photos/white-and-red-wooden-house-miniature-on-brown-table-rgJ1J8SDEAY",
-    //     set: (v) => v === "" ? "https://unsplash.com/photos/white-and-red-wooden-house-miniature-on-brown-table-rgJ1J8SDEAY" : v,
-    // },
     price:Number,
     location:String,
     country:String,
+    reviews: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Review",
+        },
+    ],
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    }
 });
+// Middleware for One to many Related Auto-Deletion
+listingSchema.post("findOneAndDelete",
+    async(listing)=> {
+        if (listing) {
+            await Review.deleteMany({_id: {$in: listing.reviews
+                                            }
+                                    })
+        }
+    })
+
 const Listing = mongoose.model("listing", listingSchema);
 module.exports = Listing;

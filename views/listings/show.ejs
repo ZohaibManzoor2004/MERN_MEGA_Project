@@ -1,6 +1,6 @@
 <% layout("./layouts/boilerplate.ejs") %>
-<div class="row mt-3">
-    <div class="col-8 offset-3">
+<div class="row mt-3 mb-3">
+    <div class="col-6 offset-3">
         <h3><%= listing.title %></h3>
         <br>
     </div>
@@ -12,27 +12,90 @@
         />
         <br>
         <div class="card-body">
-            <p class="card-text">
-                <b><%= listing.title %></b><br>
-                <%= listing.description%><br>
-                <%= listing.price.toLocaleString("en-PK") %> PKR<br>
-                <%= listing.location %><br>
-                <%= listing.country %><br><br><br>
-            </p>
+            <p class="card-text"><i> <%= listing.owner.username %> </i> </p>
+            <p class="card-text"><%= listing.description %> </p>
+            <p class="card-text"><%= listing.price.toLocaleString("en-PK") %> PKR </p> 
+            <p class="card-text">   <%= listing.location %> </p> 
+            <p class="card-text"><%= listing.country %> </p>
         </div>
     </div>
     <br><br>
-
+    <% if (currUser && currUser._id.equals(listing.owner._id))  { %>
     <div class="btns d-flex">
-        <a href="/listing/<%= listing.id %>/edit" 
+        <a href="/listings/<%= listing.id %>/edit" 
             class="btn btn-dark col-2 offset-3 add-btn"
             >Edit this Listing
         </a>
-
-        <form method="POST" action="/listing/<%= listing.id %>/delete?_method=DELETE">
+        <form method="POST" action="/listings/<%= listing.id %>/delete?_method=DELETE">
             <button class="btn btn-dark offset-5">Delete</button>
         </form>
     </div>
-    <abbr></abbr>
+    <% } %>
 
+    <div class="col-8 offset-3 mb-3">
+    <hr>
+        <% if(currUser) {%>
+        <h4>Leave a Review</h4>
+        <form action="/listings/<%= listing.id %>/reviews" method="POST" novalidate class="needs-validation">
+            <div class="mb-3 mt-3">
+                <label for="rating" class="form-label">Rating</label>
+                <input 
+                type="range"
+                min="1"
+                max="5"
+                id="rating"
+                name="review[rating]"
+                class="form-range"
+                />
+            </div>
+            <div class="mb-3 mt-3">
+                <label for="Comment" class="form-label">Comments</label>
+                <textarea 
+                name="review[comment]"
+                id="Comment"
+                cols="30"
+                rows="5"
+                class="form-control"
+                required
+                >
+            </textarea>
+            <div class="invalid-feedback">Please add some comment for Review </div>
+            </div>
+                <button class="btn btn-outline-dark">
+                    Submit
+                </button> 
+        </form>
+       <% } %>
+        <h4 style="text-align:center"> All Reviews</h4>
+        <hr>
+
+        <br>
+            <div class="row">
+                <% if (!listing.reviews || listing.reviews.length === 0) { %>
+                    <h5> No Reviews yet!</h5>
+                <% } %>
+                <% for (let review of listing.reviews) { %>
+                    <div class="card col-6" >
+                        <div class="card-body">
+                            <h5 class="card-title"><%= review.author.username %></h5>
+                            <p class="card-text"><%= review.comment %></p>
+                            <p class="card-text"><%= review.rating %> Stars</p>
+                            <p></p>
+                            <form 
+                             class="mb-3"
+                             method="POST"
+                             action="/listings/<%= listing._id %>/reviews/<%=review._id %>?_method=DELETE"
+                            >
+                                <button class="btn btn-sm btn-dark">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                        <hr>
+                    </div>
+                    <!-- <li><%= review.comment, review.rating %> stars</li>  -->
+                <% } %>
+            </div>
+    </div>
+    <abbr></abbr>
 </div>

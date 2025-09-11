@@ -1,26 +1,76 @@
-
 <% layout("./layouts/boilerplate.ejs") %>
-<body>
-<h1>All Listings</h1>
-<div class="row row-cols-xl-4 row-cols-lg-4 row-cols-md-2 row-cols-sm-1" >
-    <% allListings.forEach(listing => { %>
-    <a  href="/listings/<%= listing._id %>" class="listing-link">
-    <div class="card col">
-        <img src="<%= listing.image.url %>" 
-            class="card-img-top"
-            alt="Listing_iamge"
-        />
-        <div class="card-img-overlay">...</div>
-        <div class="card-body">
-                <!-- <h5 class="card-title"><%= listing.title %></h5> -->
-          <p class="card-text">
-           <b> <%= listing.title %> </b><br /> 
-            <%= listing.price %> PKR / Night 
-          </p>
-        </div>
-    </div>
-    </a>
-    <% }) %>
-</div>
-</body>
 
+<body>
+<div class="container mt-5">
+    <!-- Heading -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-4 text-gradient">✨ Wanderlust Stays ✨</h1>
+        <p class="lead text-secondary">Find your next adventure, styled like Airbnb</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="row row-cols-xl-4 row-cols-lg-4 row-cols-md-2 row-cols-sm-1 g-4">
+        <% allListings.forEach(listing => { %>
+            <div class="col">
+                <a href="/listings/<%= listing._id %>" class="text-decoration-none text-dark">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden listing-card">
+                        <!-- Image -->
+                        <div class="ratio ratio-4x3">
+                            <img src="<%= listing.image.url %>" 
+                                 class="card-img-top object-fit-cover"
+                                 alt="Listing image" />
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <h5 class="card-title fw-semibold mb-1 listing-title">
+                                <%= listing.title %>
+                            </h5>
+                            <p class="card-text small text-muted mb-2">
+                                <i class="bi bi-geo-alt-fill text-danger"></i> Popular Destination
+                            </p>
+                            <p class="card-text mb-0">
+                                <span class="fw-bold text-dark fs-5"><%= listing.price %> PKR</span> 
+                                <span class="text-muted">/ Night</span>
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        <% }) %>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+    /* Gradient heading */
+    .text-gradient {
+        background: linear-gradient(90deg, #ff5a5f, #fc6d26, #ff385c);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 2px;
+    }
+
+    /* Card hover */
+    .listing-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 1.2rem;
+    }
+    .listing-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+    }
+
+    /* Listing title style */
+    .listing-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    /* Image fix */
+    .object-fit-cover {
+        object-fit: cover;
+    }
+</style>
+</body>
